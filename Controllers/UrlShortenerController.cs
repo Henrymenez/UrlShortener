@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UrlShortener.Data;
-using UrlShortener.Models;
+using UrlShortener.Dtos.Request;
+using UrlShortener.Interface;
 
 namespace UrlShortener.Controllers
 {
@@ -9,49 +8,37 @@ namespace UrlShortener.Controllers
     [ApiController]
     public class UrlShortenerController : ControllerBase
     {
-        private readonly UrlShortenerContext _context;
+        private readonly IUrlService urlService;
 
-        public UrlShortenerController(UrlShortenerContext context)
+        public UrlShortenerController(IUrlService urlService)
         {
-            _context = context;
+            this.urlService = urlService;
         }
 
         [HttpPost]
-        public async Task<IActionResult> ShortenUrl([FromBody] string originalUrl)
+        public async Task<IActionResult> ShortenUrl([FromBody] UrlRequest request)
         {
-            if (string.IsNullOrEmpty(originalUrl))
+
+            var result = await urlService.ShortenUrl(request);
+            if (result.Status)
             {
-                return BadRequest("Invalid URL.");
+                return Ok(result);
             }
-
-            var shortUrl = GenerateShortUrl();
-            var urlMapping = new UrlMapping { OriginalUrl = originalUrl, ShortUrl = shortUrl };
-
-            _context.UrlMappings.Add(urlMapping);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { ShortUrl = shortUrl });
+            return BadRequest(result);
         }
 
         [HttpGet("{shortUrl}")]
-        public async Task<IActionResult> RedirectToUrl(string shortUrl)
+        public async Task<IActionResult> ShowUrl(string shortUrl)
         {
-            var urlMapping = await _context.UrlMappings.FirstOrDefaultAsync(u => u.ShortUrl == shortUrl);
-
-            if (urlMapping == null)
+            var result = await urlService.GetActualUrl(shortUrl);
+            if (result.Status)
             {
-                return NotFound();
+                return Ok(result);
             }
+            return NotFound(result);
 
-            return Ok(urlMapping.OriginalUrl);
         }
 
-        private string GenerateShortUrl()
-        {
-            var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, 30)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
+
     }
 }

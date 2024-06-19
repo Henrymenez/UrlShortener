@@ -1,6 +1,8 @@
 
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Data;
+using UrlShortener.Implementation;
+using UrlShortener.Interface;
 
 namespace UrlShortener
 {
@@ -21,7 +23,7 @@ namespace UrlShortener
                        s.EnableRetryOnFailure(3);
                    });
                });
-
+            builder.Services.AddTransient<IUrlService, UrlService>();
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
