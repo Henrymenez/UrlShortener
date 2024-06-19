@@ -1,4 +1,7 @@
 
+using Microsoft.EntityFrameworkCore;
+using UrlShortener.Data;
+
 namespace UrlShortener
 {
     public class Program
@@ -8,6 +11,16 @@ namespace UrlShortener
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddDbContext<UrlShortenerContext>(
+               options =>
+               {
+                   //options.UseLazyLoadingProxies();
+                   options.UseSqlServer("Data Source=DESKTOP-DM3DDUO\\SQLEXPRESS;Initial Catalog=urlshortener;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False", s =>
+                   {
+                       //  s.MigrationsAssembly("");
+                       s.EnableRetryOnFailure(3);
+                   });
+               });
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

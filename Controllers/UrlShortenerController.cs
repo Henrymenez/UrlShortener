@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using UrlShortener.Data;
 using UrlShortener.Models;
 
@@ -26,8 +27,8 @@ namespace UrlShortener.Controllers
             var shortUrl = GenerateShortUrl();
             var urlMapping = new UrlMapping { OriginalUrl = originalUrl, ShortUrl = shortUrl };
 
-            //   _context.UrlMappings.Add(urlMapping);
-            // await _context.SaveChangesAsync();
+            _context.UrlMappings.Add(urlMapping);
+            await _context.SaveChangesAsync();
 
             return Ok(new { ShortUrl = shortUrl });
         }
@@ -35,26 +36,21 @@ namespace UrlShortener.Controllers
         [HttpGet("{shortUrl}")]
         public async Task<IActionResult> RedirectToUrl(string shortUrl)
         {
-            var urlMapping = new
-            {
-                OriginalUrl = ""
-            };
-            // await _context.UrlMappings
-            // .FirstOrDefaultAsync(u => u.ShortUrl == shortUrl);
+            var urlMapping = await _context.UrlMappings.FirstOrDefaultAsync(u => u.ShortUrl == shortUrl);
 
             if (urlMapping == null)
             {
                 return NotFound();
             }
 
-            return Redirect(urlMapping.OriginalUrl);
+            return Ok(urlMapping.OriginalUrl);
         }
 
         private string GenerateShortUrl()
         {
             var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var random = new Random();
-            return new string(Enumerable.Repeat(chars, 6)
+            return new string(Enumerable.Repeat(chars, 30)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
