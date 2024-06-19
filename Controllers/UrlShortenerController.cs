@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UrlShortener.Dtos.Request;
+using UrlShortener.Dtos.Response;
 using UrlShortener.Interface;
 
 namespace UrlShortener.Controllers
@@ -16,6 +17,8 @@ namespace UrlShortener.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(UrlResponse), 200)]
+        [ProducesResponseType(400)]
         public async Task<IActionResult> ShortenUrl([FromBody] UrlRequest request)
         {
 
@@ -28,6 +31,8 @@ namespace UrlShortener.Controllers
         }
 
         [HttpGet("{shortUrl}")]
+        [ProducesResponseType(typeof(UrlResponse), 200)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> ShowUrl(string shortUrl)
         {
             var result = await urlService.GetActualUrl(shortUrl);
